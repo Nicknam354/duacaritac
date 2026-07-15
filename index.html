@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Inventory - Dua Carita Coffee</title>
+    <meta name="description" content="Halaman manajemen inventory untuk Dua Carita Coffee">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Dua Carita Coffee" class="logo-img">
+            </div>
+            <p>Sistem Manajemen Internal</p>
+
+            <nav class="app-nav">
+                <a href="index.html" class="nav-link active"><i class="ri-archive-line"></i> Inventory</a>
+                <a href="resep.html" class="nav-link"><i class="ri-book-read-line"></i> Resep Menu</a>
+                <a href="order.html" class="nav-link"><i class="ri-shopping-cart-2-line"></i> Order Kasir</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Form Section -->
+            <section class="form-section">
+                <div class="card form-card">
+                    <h2><i class="ri-add-box-line"></i> Input Bahan Baru</h2>
+                    <form id="inventoryForm">
+                        <input type="hidden" id="editId">
+
+                        <div class="form-group">
+                            <label for="itemName">Nama Bahan</label>
+                            <div class="input-wrapper">
+                                <i class="ri-box-3-line"></i>
+                                <input type="text" id="itemName" placeholder="Contoh: Biji Kopi Arabica" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="itemQuantity">Jumlah</label>
+                                <div class="input-wrapper">
+                                    <i class="ri-scales-3-line"></i>
+                                    <input type="number" id="itemQuantity" placeholder="0" min="0" step="0.01" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="itemUnit">Satuan</label>
+                                <div class="input-wrapper">
+                                    <i class="ri-measuring-jug-line"></i>
+                                    <select id="itemUnit" required>
+                                        <option value="" disabled selected>Pilih Satuan</option>
+                                        <option value="kg">Kilogram (kg)</option>
+                                        <option value="gram">Gram (g)</option>
+                                        <option value="liter">Liter (L)</option>
+                                        <option value="ml">Mililiter (ml)</option>
+                                        <option value="buah">Buah / Pcs</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="itemNotes">Keterangan</label>
+                            <div class="input-wrapper">
+                                <i class="ri-sticky-note-line"></i>
+                                <textarea id="itemNotes" rows="3"
+                                    placeholder="Tambahkan catatan jika ada..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" id="btnCancel" style="display: none;">Batal
+                                Edit</button>
+                            <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                <i class="ri-save-line"></i> <span>Tambah Bahan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Table Section -->
+            <section class="table-section">
+                <div class="card table-card">
+                    <div class="table-header">
+                        <h2><i class="ri-list-check-2"></i> Daftar Inventory</h2>
+                        <div class="search-box">
+                            <i class="ri-search-line"></i>
+                            <input type="text" id="searchInput" placeholder="Cari bahan...">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Nama Bahan</th>
+                                    <th>Jumlah</th>
+                                    <th>Satuan</th>
+                                    <th>Keterangan</th>
+                                    <th class="actions-col">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryList">
+                                <!-- Data rows will be rendered here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="empty-state" id="emptyState">
+                        <i class="ri-inbox-archive-line"></i>
+                        <p>Belum ada data inventory.</p>
+                        <span>Silahkan tambahkan bahan melalui form di atas.</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Restock Modal -->
+    <div class="modal-overlay" id="restockModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="restockModalTitle">Restok Bahan</h3>
+                <button type="button" class="close-btn" id="closeRestockModal"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="restockForm">
+                    <input type="hidden" id="restockItemId">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Nama Bahan</label>
+                        <div class="input-wrapper">
+                            <i class="ri-box-3-line"></i>
+                            <input type="text" id="restockItemName" readonly
+                                style="background-color: #f1f5f9; cursor: not-allowed; color: var(--text-muted);">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="restockQuantity">Jumlah Restok</label>
+                            <div class="input-wrapper">
+                                <i class="ri-add-circle-line"></i>
+                                <input type="number" id="restockQuantity" placeholder="0" min="0.01" step="0.01"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="restockUnit">Satuan</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="restockUnit" readonly
+                                    style="background-color: #f1f5f9; cursor: not-allowed; color: var(--text-muted); padding-left: 1rem;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="restockDate">Tanggal Restok</label>
+                        <div class="input-wrapper">
+                            <i class="ri-calendar-event-line"></i>
+                            <input type="date" id="restockDate" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" style="width: 100%;">
+                        <i class="ri-save-line"></i> <span>Simpan Restok</span>
+                    </button>
+                </form>
+
+                <div class="restock-history-section" style="margin-top: 1.5rem;">
+                    <details class="history-dropdown"
+                        style="background: var(--input-bg); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <summary
+                            style="padding: 1rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; list-style: none;">
+                            <span style="display: flex; align-items: center; gap: 0.5rem;"><i
+                                    class="ri-history-line"></i> Riwayat Restok</span>
+                            <i class="ri-arrow-down-s-line" style="transition: transform 0.3s;"></i>
+                        </summary>
+                        <style>
+                            .history-dropdown summary::-webkit-details-marker {
+                                display: none;
+                            }
+
+                            .history-dropdown[open] summary .ri-arrow-down-s-line {
+                                transform: rotate(180deg);
+                            }
+                        </style>
+                        <div class="history-content"
+                            style="padding: 0 1rem 1rem 1rem; max-height: 220px; overflow-y: auto;">
+                            <table style="width: 100%; font-size: 0.9rem; margin-top: 0.5rem;">
+                                <thead>
+                                    <tr>
+                                        <th
+                                            style="padding: 0.5rem; background: transparent; border-bottom: 1px solid var(--border-color);">
+                                            No</th>
+                                        <th
+                                            style="padding: 0.5rem; background: transparent; border-bottom: 1px solid var(--border-color);">
+                                            Tanggal</th>
+                                        <th
+                                            style="padding: 0.5rem; background: transparent; border-bottom: 1px solid var(--border-color);">
+                                            Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="restockHistoryList">
+                                    <!-- History items will be inserted here -->
+                                </tbody>
+                            </table>
+                            <div id="emptyRestockHistory"
+                                style="text-align: center; color: var(--text-muted); padding: 1rem; display: none;">
+                                Belum ada riwayat restok.
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="store.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
