@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resep Menu - Dua Carita Coffee</title>
+    <meta name="description" content="Halaman manajemen resep menu untuk Dua Carita Coffee">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Dua Carita Coffee" class="logo-img">
+            </div>
+            <p>Sistem Manajemen Internal</p>
+
+            <nav class="app-nav">
+                <a href="index.html" class="nav-link"><i class="ri-archive-line"></i> Inventory</a>
+                <a href="resep.html" class="nav-link active"><i class="ri-book-read-line"></i> Resep Menu</a>
+                <a href="order.html" class="nav-link"><i class="ri-shopping-cart-2-line"></i> Order Kasir</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="page-header">
+                <h2><i class="ri-book-3-line"></i> Daftar Resep Menu</h2>
+                <button class="btn btn-primary" style="flex: none; padding: 0.5rem 1rem; font-size: 0.9rem;"
+                    onclick="window.openRecipeModal()">
+                    <i class="ri-add-line"></i> Tambah
+                </button>
+            </div>
+
+            <!-- Recipe Grid (Dynamic) -->
+            <div class="recipe-grid" id="recipeGrid">
+                <!-- Data will be rendered here by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Recipe Modal Overlay -->
+    <div class="modal-overlay" id="recipeModal">
+        <div class="modal-container" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 id="recipeModalTitle">Tambah Resep Baru</h3>
+                <button class="close-btn" onclick="window.closeRecipeModal()">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form id="recipeForm">
+                    <input type="hidden" id="recipeEditId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nama Menu</label>
+                            <input type="text" id="recipeName" required placeholder="Contoh: Cappuccino">
+                        </div>
+                        <div class="form-group">
+                            <label>Harga Default/Dasar (Rp)</label>
+                            <input type="number" id="recipePrice" required placeholder="Contoh: 25000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gambar Menu (Maks 10MB)</label>
+                        <input type="file" id="recipeImage" accept="image/*">
+                        <img id="imagePreview" src="" alt="Preview"
+                            style="display: none; max-width: 100%; height: auto; max-height: 200px; margin-top: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bahan-bahan per Variasi (Format: Nama, Jumlah, Satuan per baris)</label>
+                        <div class="recipe-tabs"
+                            style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem;">
+                            <button type="button" class="tab-btn active" data-tab="Botol_250ml"
+                                style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: var(--primary-color); color: white; border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; font-size: 0.85rem;">Botol
+                                250ml</button>
+                            <button type="button" class="tab-btn" data-tab="Botol_1000ml"
+                                style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-muted); border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; font-size: 0.85rem;">Botol
+                                1000ml</button>
+                            <button type="button" class="tab-btn" data-tab="Cup_Medium"
+                                style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-muted); border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; font-size: 0.85rem;">Cup
+                                Medium</button>
+                            <button type="button" class="tab-btn" data-tab="Cup_Large"
+                                style="padding: 0.4rem 0.8rem; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-muted); border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; font-size: 0.85rem;">Cup
+                                Large</button>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="font-size: 0.85rem; font-weight: 500;">Harga Variasi Ini (Rp)</label>
+                            <input type="number" id="recipeVariasiPrice" placeholder="Harga untuk ukuran ini (Kosongkan jika sama dengan harga default)" style="font-size: 0.9rem; padding: 0.5rem; width: 100%; box-sizing: border-box;">
+                        </div>
+                        <textarea id="recipeIngredients" rows="4"
+                            placeholder="Contoh:&#10;kopi, 10, gram&#10;botol 250, 1, pcs"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Langkah Pembuatan (Satu langkah per baris)</label>
+                        <textarea id="recipeSteps" rows="4" required
+                            placeholder="Siapkan espresso shot.&#10;Steam susu segar."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="window.closeRecipeModal()">Batal</button>
+                <button class="btn btn-primary" onclick="window.saveRecipe()">
+                    <i class="ri-save-line"></i> Simpan Resep
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="store.js"></script>
+    <script src="resep.js"></script>
+</body>
+
+</html>
