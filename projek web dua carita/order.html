@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Kasir - Dua Carita Coffee</title>
+    <meta name="description" content="Halaman order dan kasir Point of Sale untuk Dua Carita Coffee">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Dua Carita Coffee" class="logo-img">
+            </div>
+            <p>Sistem Manajemen Internal</p>
+            <nav class="app-nav">
+                <a href="index.html" class="nav-link"><i class="ri-archive-line"></i> Inventory</a>
+                <a href="resep.html" class="nav-link"><i class="ri-book-read-line"></i> Resep Menu</a>
+                <a href="order.html" class="nav-link active"><i class="ri-shopping-cart-2-line"></i> Order Kasir</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- =========================================== -->
+            <!-- VIEW 1: MENU GRID                          -->
+            <!-- =========================================== -->
+            <div id="view-menu">
+                <div class="page-header">
+                    <h2><i class="ri-store-2-line"></i> Menu Tersedia</h2>
+                    <div class="search-box">
+                        <i class="ri-search-line"></i>
+                        <input type="text" id="menuSearch" placeholder="Cari menu...">
+                    </div>
+                </div>
+                <div class="menu-grid" id="menuGrid">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- =========================================== -->
+            <!-- VIEW 2: CART REVIEW                        -->
+            <!-- =========================================== -->
+            <div id="view-cart" style="display:none;">
+                <div class="pos-view-header">
+                    <button class="btn-back" onclick="window.showMenuView()">
+                        <i class="ri-arrow-left-line"></i> Kembali ke Menu
+                    </button>
+                    <h2><i class="ri-receipt-line"></i> Ringkasan Pesanan</h2>
+                </div>
+
+                <div class="cart-layout">
+                    <!-- Cart Items -->
+                    <div class="cart-items-panel">
+                        <div class="cart-items-list" id="cartItemsList">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Cart Summary + Payment -->
+                    <div class="cart-summary-panel">
+                        <div class="cart-totals-box">
+                            <div class="cart-total-row">
+                                <span>Subtotal</span>
+                                <span id="cartSubtotal">Rp 0</span>
+                            </div>
+                            <div class="cart-total-row grand">
+                                <span>Total Pembayaran</span>
+                                <strong id="cartGrandTotal">Rp 0</strong>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="payment-section">
+                            <h3 class="section-label"><i class="ri-bank-card-line"></i> Metode Pembayaran</h3>
+                            <div class="payment-methods">
+                                <label class="payment-card" id="payCard-cash">
+                                    <input type="radio" name="payMethod" value="cash" checked>
+                                    <div class="payment-card-inner">
+                                        <i class="ri-money-dollar-circle-line"></i>
+                                        <span>Cash</span>
+                                    </div>
+                                </label>
+                                <label class="payment-card" id="payCard-qris">
+                                    <input type="radio" name="payMethod" value="qris">
+                                    <div class="payment-card-inner">
+                                        <i class="ri-qr-code-line"></i>
+                                        <span>QRIS</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-block pos-action-btn" onclick="window.proceedToPayment()">
+                            <i class="ri-arrow-right-circle-line"></i> Lanjut ke Pembayaran
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================== -->
+            <!-- VIEW 3: CASH PAYMENT                       -->
+            <!-- =========================================== -->
+            <div id="view-cash" style="display:none;">
+                <div class="pos-view-header">
+                    <button class="btn-back" onclick="window.showCartView()">
+                        <i class="ri-arrow-left-line"></i> Kembali
+                    </button>
+                    <h2><i class="ri-money-dollar-circle-line"></i> Pembayaran Tunai</h2>
+                </div>
+
+                <div class="cash-payment-body">
+                    <div class="cash-card">
+                        <div class="cash-row">
+                            <span class="cash-label">Total Tagihan</span>
+                            <div class="cash-value total-value" id="cashTotalDisplay">Rp 0</div>
+                        </div>
+                        <div class="cash-row">
+                            <span class="cash-label">Uang Tunai Diterima</span>
+                            <div class="input-wrapper" style="margin-top:0.5rem;">
+                                <i class="ri-money-dollar-circle-line"></i>
+                                <input type="number" id="cashInput" placeholder="Masukkan nominal uang..." min="0" oninput="window.calculateChange()">
+                            </div>
+                        </div>
+                        <div class="cash-divider"></div>
+                        <div class="cash-row kembalian-row">
+                            <span class="cash-label">Kembalian</span>
+                            <div class="kembalian-value" id="kembalianDisplay">Rp 0</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-cash-btns" id="quickCashBtns">
+                        <!-- Rendered by JS based on total -->
+                    </div>
+
+                    <button class="btn btn-primary btn-block pos-action-btn" id="btnBayarCash" onclick="window.finalizeCashPayment()" disabled>
+                        <i class="ri-check-double-line"></i> Bayar
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Cart Button -->
+    <button class="floating-cart-btn" id="floatingCartBtn" onclick="window.showCartView()" style="display:none;">
+        <div class="floating-cart-left">
+            <span class="cart-badge" id="cartBadge">0</span>
+            <span>Lihat Keranjang</span>
+        </div>
+        <div class="floating-cart-right">
+            <span id="cartTotalLabel">Rp 0</span>
+            <i class="ri-arrow-right-line"></i>
+        </div>
+    </button>
+
+    <!-- =========================================== -->
+    <!-- MODAL: KUSTOMISASI PESANAN                  -->
+    <!-- =========================================== -->
+    <div class="modal-overlay" id="customizeModal">
+        <div class="modal-container customize-modal-container">
+            <div class="modal-header">
+                <div>
+                    <h3 id="customizeModalTitle">Kustomisasi Pesanan</h3>
+                    <p class="modal-subtitle" id="customizeModalPrice">Rp 0</p>
+                </div>
+                <button class="close-btn" id="btnCancelCustomize"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="modal-body customize-modal-body">
+
+                <!-- Packaging -->
+                <div class="custom-section">
+                    <p class="custom-section-label"><i class="ri-archive-2-line"></i> Packaging</p>
+                    <div class="option-cards" id="packagingOptions">
+                        <label class="option-card">
+                            <input type="radio" name="packaging" value="Botol">
+                            <div class="option-card-inner">
+                                <i class="ri-flask-line"></i>
+                                <span>Botol</span>
+                            </div>
+                        </label>
+                        <label class="option-card">
+                            <input type="radio" name="packaging" value="Cup">
+                            <div class="option-card-inner">
+                                <i class="ri-cup-line"></i>
+                                <span>Cup</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Ukuran (Conditional) -->
+                <div class="custom-section" id="sizeSection">
+                    <p class="custom-section-label"><i class="ri-ruler-2-line"></i> Ukuran</p>
+                    <div class="option-cards" id="sizeOptions">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="custom-section">
+                    <p class="custom-section-label"><i class="ri-stack-line"></i> Jumlah</p>
+                    <div class="qty-control-large">
+                        <button class="qty-btn-large" onclick="window.changeCustomQty(-1)">
+                            <i class="ri-subtract-line"></i>
+                        </button>
+                        <span class="qty-large-display" id="customQtyDisplay">1</span>
+                        <button class="qty-btn-large" onclick="window.changeCustomQty(1)">
+                            <i class="ri-add-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="custom-section">
+                    <p class="custom-section-label"><i class="ri-sticky-note-line"></i> Catatan <span style="font-weight:400;color:var(--text-muted);">(Opsional)</span></p>
+                    <div class="input-wrapper">
+                        <i class="ri-sticky-note-line"></i>
+                        <textarea id="customNotes" rows="2" placeholder="Contoh: less sugar, tanpa es, extra shot..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Item Price Preview -->
+                <div class="custom-price-preview">
+                    <span>Subtotal</span>
+                    <strong id="customSubtotalPreview">Rp 0</strong>
+                </div>
+                
+                <!-- Inventory Status Preview -->
+                <div id="inventoryStatusPreview" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border-color); font-size: 0.9rem; display: none;">
+                </div>
+
+            </div>
+            <div class="modal-footer customize-modal-footer">
+                <button class="btn btn-cancel" id="btnCancelCustomize2">Batal</button>
+                <button class="btn btn-primary" id="btnAddToCart" onclick="window.addToCart()">
+                    <i class="ri-shopping-cart-2-line"></i> Tambah ke Keranjang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- MODAL: QRIS PAYMENT                         -->
+    <!-- =========================================== -->
+    <div class="modal-overlay" id="qrisModal">
+        <div class="modal-container qris-modal-container">
+            <div class="modal-header">
+                <h3><i class="ri-qr-code-line"></i> Pembayaran QRIS</h3>
+                <button class="close-btn" onclick="window.closeQRIS()"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="modal-body qris-modal-body">
+                <div class="qris-total-display">
+                    <span>Total Pembayaran</span>
+                    <strong id="qrisTotalDisplay">Rp 0</strong>
+                </div>
+                <div class="qr-box">
+                    <!-- SVG QR Code Placeholder -->
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                        <!-- Corner squares -->
+                        <rect x="10" y="10" width="60" height="60" rx="6" fill="none" stroke="#1E293B" stroke-width="8"/>
+                        <rect x="25" y="25" width="30" height="30" fill="#1E293B" rx="3"/>
+                        <rect x="130" y="10" width="60" height="60" rx="6" fill="none" stroke="#1E293B" stroke-width="8"/>
+                        <rect x="145" y="25" width="30" height="30" fill="#1E293B" rx="3"/>
+                        <rect x="10" y="130" width="60" height="60" rx="6" fill="none" stroke="#1E293B" stroke-width="8"/>
+                        <rect x="25" y="145" width="30" height="30" fill="#1E293B" rx="3"/>
+                        <!-- Data dots -->
+                        <rect x="90" y="10" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="110" y="10" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="90" y="30" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="110" y="30" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="90" y="50" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="110" y="50" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="10" y="90" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="30" y="90" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="50" y="90" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="70" y="90" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="90" y="90" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="110" y="90" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="130" y="90" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="150" y="90" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="170" y="90" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="10" y="110" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="30" y="110" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="50" y="110" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="70" y="110" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="90" y="110" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="110" y="110" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="130" y="110" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="150" y="110" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="170" y="110" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="90" y="130" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="110" y="130" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="130" y="130" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="150" y="130" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="170" y="130" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="90" y="150" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="110" y="150" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="130" y="150" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="150" y="150" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="170" y="150" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="90" y="170" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="110" y="170" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="130" y="170" width="15" height="15" fill="#10B981" rx="2"/>
+                        <rect x="150" y="170" width="15" height="15" fill="#1E293B" rx="2"/>
+                        <rect x="170" y="170" width="15" height="15" fill="#10B981" rx="2"/>
+                    </svg>
+                </div>
+                <p class="qris-instruction">Tunjukkan QR Code ini kepada pelanggan untuk di-scan.<br>
+                Setelah pembayaran berhasil, klik <strong>Konfirmasi</strong>.</p>
+            </div>
+            <div class="modal-footer" style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;">
+                <button class="btn btn-cancel" onclick="window.closeQRIS()">Batal</button>
+                <button class="btn btn-primary" onclick="window.finalizeQRISPayment()">
+                    <i class="ri-check-double-line"></i> Konfirmasi Pembayaran
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- MODAL: TRANSAKSI SELESAI                    -->
+    <!-- =========================================== -->
+    <div class="modal-overlay" id="finishModal">
+        <div class="modal-container finish-modal-container">
+            <div class="modal-body finish-modal-body">
+                <div class="finish-icon-wrap">
+                    <i class="ri-checkbox-circle-fill"></i>
+                </div>
+                <h3>Transaksi Berhasil!</h3>
+                <p id="finishSummary" class="finish-summary">Pesanan telah diproses.</p>
+            </div>
+            <div class="modal-footer" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;border-top:none;">
+                <button class="btn btn-outline" onclick="window.printReceipt()">
+                    <i class="ri-printer-line"></i> Cetak Struk
+                </button>
+                <button class="btn btn-primary" onclick="window.finishTransaction()">
+                    <i class="ri-check-line"></i> Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="store.js"></script>
+    <script src="order.js"></script>
+</body>
+</html>
