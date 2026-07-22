@@ -1070,7 +1070,7 @@ tbody td {
         align-items: flex-start;
         gap: 1rem;
     }
-    .menu-grid, .recipe-grid {
+    .recipe-grid {
         grid-template-columns: 1fr;
     }
     .logo-img {
@@ -1778,5 +1778,181 @@ tbody td {
     font-size: 0.9rem;
     margin: 0;
     line-height: 1.5;
+}
+
+/* ============================================================ */
+/* MOBILE RESPONSIVE TWEAKS (POS KASIR)                         */
+/* ============================================================ */
+@media (max-width: 768px) {
+    /* 1. Layout Utama: Cart & Main 1 Kolom berurutan */
+    .cart-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* 2. Daftar Kartu Menu: 2 Kolom Sejajar */
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .menu-card {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-image-container {
+        height: 130px; /* Lebih pendek untuk 2 kolom */
+    }
+
+    .menu-content {
+        padding: 0.75rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .menu-desc {
+        font-size: 0.75rem;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .menu-price {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+        bottom: 0.5rem;
+        right: 0.5rem;
+    }
+
+    .btn-block {
+        margin-top: auto;
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+
+    /* 3. Modal Kustomisasi: Bottom Sheet style, Full Width & Touch-Friendly */
+    .modal-overlay {
+        align-items: flex-end; /* Supaya pop up nempel bawah */
+    }
+
+    .modal-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        transform: translateY(100%);
+    }
+    
+    .modal-overlay.active .modal-container {
+        transform: translateY(0);
+    }
+
+    .modal-body {
+        max-height: 75vh;
+        -webkit-overflow-scrolling: touch;
+        padding: 1.25rem 1rem;
+    }
+
+    .option-card-inner {
+        padding: 1.2rem 1rem; /* Tombol yang empuk dan besar di tap */
+        font-size: 1rem;
+    }
+    
+    .option-card-inner i {
+        font-size: 1.5rem;
+    }
+
+    .qty-btn-large {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .qty-large-display {
+        font-size: 1.4rem;
+        min-width: 3.5rem;
+    }
+
+    .customize-modal-footer, .modal-footer {
+        padding: 1.25rem 1rem;
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    }
+
+    /* 4. Antarmuka Keranjang & Pembayaran */
+    .cart-item-card {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .cart-item-name {
+        font-size: 1.05rem;
+    }
+
+    .cart-item-qty-control button {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+    }
+    
+    .cart-item-qty-control span {
+        font-size: 1.1rem;
+    }
+
+    .cart-item-subtotal {
+        font-size: 1.1rem;
+    }
+    
+    .cart-total-row.grand {
+        font-size: 1.1rem;
+    }
+    
+    .cart-total-row.grand strong {
+        font-size: 1.4rem;
+    }
+
+    /* Pembayaran Tunai */
+    .cash-payment-body {
+        padding-bottom: 2rem;
+    }
+
+    .cash-value.total-value {
+        font-size: 2rem;
+    }
+
+    #cashInput {
+        font-size: 1.2rem;
+        padding: 1rem 1rem 1rem 3rem;
+    }
+
+    .input-wrapper i {
+        font-size: 1.4rem;
+        left: 1.2rem;
+    }
+
+    .quick-cash-btns {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .quick-cash-btn {
+        padding: 0.85rem;
+        font-size: 1rem;
+    }
+    
+    .pos-action-btn {
+        padding: 1.2rem;
+        font-size: 1.1rem;
+    }
 }
 

@@ -12,6 +12,8 @@ let inventoryDirtyAt = 0;
 let recipesDirtyAt = 0;
 const SYNC_COOLDOWN_MS = 10000; // 10 detik
 
+const SESSION_SYNC_KEY = 'duaCarita_session_synced';
+
 async function initializeStore() {
     // 1. Coba muat dari cache lokal terlebih dahulu untuk render instan
     const cachedInv = localStorage.getItem('cache_inventory');
@@ -24,36 +26,46 @@ async function initializeStore() {
         localRecipesCache = parsedRecipes.map(unpackRecipe);
     }
 
-    // 2. Ambil data terbaru di background
-    const fetchPromise = (async () => {
-        try {
-            const invResponse = await fetch(API_URL + '?action=getInventory');
-            const freshInventory = await invResponse.json();
-            // Hanya timpa jika tidak ada perubahan lokal yang belum disync
-            if (Date.now() - inventoryDirtyAt > SYNC_COOLDOWN_MS) {
-                localInventoryCache = freshInventory;
-                localStorage.setItem('cache_inventory', JSON.stringify(localInventoryCache));
-            }
-            
-            const recResponse = await fetch(API_URL + '?action=getRecipes');
-            let freshRecipes = await recResponse.json();
-            freshRecipes = freshRecipes.map(unpackRecipe);
-            // Hanya timpa jika tidak ada perubahan lokal yang belum disync
-            if (Date.now() - recipesDirtyAt > SYNC_COOLDOWN_MS) {
-                localRecipesCache = freshRecipes;
-                localStorage.setItem('cache_recipes', JSON.stringify(localRecipesCache));
-            }
-            
-            // Memberitahu UI bahwa data terbaru sudah siap untuk di-render ulang
-            document.dispatchEvent(new Event('storeUpdated'));
-        } catch (e) {
-            console.error("Background sync failed:", e);
-        }
-    })();
+    const isSessionSynced = sessionStorage.getItem(SESSION_SYNC_KEY);
 
-    // Jika belum ada cache sama sekali (pertama kali buka), tunggu loading selesai
-    if (!cachedInv || !cachedRec) {
-        await fetchPromise;
+    // 2. Ambil data terbaru di background JIKA belum di-sync di sesi ini (atau cache kosong)
+    if (!isSessionSynced || !cachedInv || !cachedRec) {
+        const fetchPromise = (async () => {
+            try {
+                const invResponse = await fetch(API_URL + '?action=getInventory');
+                const freshInventory = await invResponse.json();
+                // Hanya timpa jika tidak ada perubahan lokal yang belum disync
+                if (Date.now() - inventoryDirtyAt > SYNC_COOLDOWN_MS) {
+                    localInventoryCache = freshInventory;
+                    localStorage.setItem('cache_inventory', JSON.stringify(localInventoryCache));
+                }
+                
+                const recResponse = await fetch(API_URL + '?action=getRecipes');
+                let freshRecipes = await recResponse.json();
+                freshRecipes = freshRecipes.map(unpackRecipe);
+                // Hanya timpa jika tidak ada perubahan lokal yang belum disync
+                if (Date.now() - recipesDirtyAt > SYNC_COOLDOWN_MS) {
+                    localRecipesCache = freshRecipes;
+                    localStorage.setItem('cache_recipes', JSON.stringify(localRecipesCache));
+                }
+                
+                sessionStorage.setItem(SESSION_SYNC_KEY, 'true');
+
+                // Memberitahu UI bahwa data terbaru sudah siap untuk di-render ulang
+                document.dispatchEvent(new Event('storeUpdated'));
+            } catch (e) {
+                console.error("Background sync failed:", e);
+            }
+        })();
+
+        // Jika belum ada cache sama sekali (pertama kali buka), tunggu loading selesai
+        if (!cachedInv || !cachedRec) {
+            await fetchPromise;
+        }
+    } else {
+        // Data sudah di-sync di sesi ini, gunakan cache lokal 100% tanpa fetch background
+        // Trigger event agar komponen UI merender data lokal instan
+        setTimeout(() => document.dispatchEvent(new Event('storeUpdated')), 0);
     }
     
     return true;

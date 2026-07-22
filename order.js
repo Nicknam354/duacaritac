@@ -397,7 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentRecipe.resepVariasiPrice && currentRecipe.resepVariasiPrice[variasiKey] !== undefined) {
             unitPrice = currentRecipe.resepVariasiPrice[variasiKey];
         }
-        const subtotal  = unitPrice * customQty;
 
         const availability = checkAvailability(currentRecipe, customQty, packaging, size);
         if (!availability.isAvailable) {
@@ -412,18 +411,34 @@ document.addEventListener('DOMContentLoaded', () => {
             finalIngredients = currentRecipe.resepVariasi[variasiKey];
         }
 
-        cart.push({
-            cartId: Date.now() + Math.random(), // unique per item
-            recipe: currentRecipe,
-            finalIngredients: finalIngredients,
-            unitPrice: unitPrice,
-            packaging,
-            size,
-            packagingLabel,
-            qty: customQty,
-            notes,
-            subtotal
-        });
+        // Cek apakah item yang sama (recipe id, packaging, size, notes) sudah ada di keranjang
+        const existingItemIndex = cart.findIndex(item => 
+            item.recipe.id === currentRecipe.id && 
+            item.packaging === packaging && 
+            item.size === size &&
+            item.notes === notes
+        );
+
+        if (existingItemIndex !== -1) {
+            // Update quantity & subtotal jika item sudah ada
+            cart[existingItemIndex].qty += customQty;
+            cart[existingItemIndex].subtotal = cart[existingItemIndex].qty * cart[existingItemIndex].unitPrice;
+        } else {
+            // Tambah item baru jika belum ada
+            const subtotal = unitPrice * customQty;
+            cart.push({
+                cartId: Date.now() + Math.random(), // unique per item
+                recipe: currentRecipe,
+                finalIngredients: finalIngredients,
+                unitPrice: unitPrice,
+                packaging,
+                size,
+                packagingLabel,
+                qty: customQty,
+                notes,
+                subtotal
+            });
+        }
 
         closeCustomizeModal();
         updateCartFloatingBtn();
@@ -467,8 +482,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="meta-chip"><i class="ri-archive-2-line"></i> ${item.packagingLabel}</span>
                         ${item.notes ? `<span class="meta-chip notes-chip"><i class="ri-sticky-note-line"></i> ${item.notes}</span>` : ''}
                     </div>
-                    <div class="cart-item-bottom">
-                        <span class="cart-item-qty-price">${item.qty}x &nbsp;${formatCurrency(item.unitPrice)}</span>
+                    <div class="cart-item-bottom" style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+                        <div class="cart-item-qty-control" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <button class="btn-qty-sm" onclick="window.updateCartQuantity(${item.cartId}, -1)" style="padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--surface-color); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-color);"><i class="ri-subtract-line"></i></button>
+                            <span style="font-weight: 600; min-width: 1.5rem; text-align: center;">${item.qty}</span>
+                            <button class="btn-qty-sm" onclick="window.updateCartQuantity(${item.cartId}, 1)" style="padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--surface-color); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-color);"><i class="ri-add-line"></i></button>
+                            <span style="margin-left: 0.3rem; color: var(--text-muted); font-size: 0.85rem;">x ${formatCurrency(item.unitPrice)}</span>
+                        </div>
                         <strong class="cart-item-subtotal">${formatCurrency(item.subtotal)}</strong>
                     </div>
                 </div>
@@ -491,6 +511,34 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             renderCartView();
         }
+    }
+
+    function updateCartQuantity(cartId, delta) {
+        const itemIndex = cart.findIndex(item => item.cartId === cartId);
+        if (itemIndex === -1) return;
+        
+        const item = cart[itemIndex];
+        
+        if (delta > 0) {
+            // Cek ketersediaan stok
+            const availability = checkAvailability(item.recipe, delta, item.packaging, item.size);
+            if (!availability.isAvailable) {
+                alert(availability.errorMessage);
+                return;
+            }
+        }
+        
+        item.qty += delta;
+        
+        if (item.qty <= 0) {
+            removeCartItem(cartId);
+            return;
+        }
+        
+        item.subtotal = item.qty * item.unitPrice;
+        
+        updateCartFloatingBtn();
+        renderCartView();
     }
 
     // ============================================================
@@ -668,6 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.changeCustomQty     = changeCustomQty;
     window.addToCart           = addToCart;
     window.removeCartItem      = removeCartItem;
+    window.updateCartQuantity  = updateCartQuantity;
     window.showMenuView        = showMenuView;
     window.showCartView        = showCartView;
     window.setQuickCash        = setQuickCash;
